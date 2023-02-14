@@ -13,6 +13,20 @@ disable_progress = True
 # Whether to enable printing the source code for each future
 verbose_progress = False
 
+# AOT compile model into .so file
+aot_codegen = False
+
+# Name for generated .h and .so files
+aot_codegen_output_prefix = "aot_inductor_output"
+
+
+def set_aot_codegen():
+    global aot_codegen
+    aot_codegen = True
+    global debug
+    debug = True
+
+
 # use cpp wrapper instead of python wrapper
 cpp_wrapper = False
 
