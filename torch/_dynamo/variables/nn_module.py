@@ -165,11 +165,12 @@ class NNModuleVariable(VariableTracker):
 
         @contextmanager
         def record_nn_module_stack():
+            access_path = tx.output._module_key_to_access_path(self.module_key)
             try:
-                tx.nn_module_stack[self.module_key] = type(mod)
+                tx.nn_module_stack[access_path] = type(mod)
                 yield
             finally:
-                del tx.nn_module_stack[self.module_key]
+                del tx.nn_module_stack[access_path]
 
         with record_nn_module_stack():
             is_lazy = is_lazy_module(mod)

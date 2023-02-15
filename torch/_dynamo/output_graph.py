@@ -4,7 +4,6 @@ import functools
 import itertools
 import logging
 import operator
-import re
 import traceback
 from dataclasses import dataclass
 from typing import Any, Dict, List, NamedTuple, Optional, OrderedDict, Set, Union
@@ -417,13 +416,12 @@ class OutputGraph(fx.Tracer, Checkpointable[OutputGraphState]):
                 # it already exists
                 return wrap_name(k)
 
-        # create a new unique name
-        name = "_".join(map(str, names))
-        # e.g. repalce abc.xyz[123].qkv with abc.xyz_123.qkv
-        name = re.sub(r"\[(\d+)\]", r"_\g<1>", name)
-        # e.g. replace abc.xyz_123.qkv with abc_xyz_123_qkv
-        name = re.sub(r"[^a-zA-Z0-9]", "_", name)
+        # This handles the common cases, it allow us to recover the access path.
+        name = self._access_path_to_module_key(list(map(str, names)))
 
+        # Following code handles weird cases such as when there is
+        # duplicated name or no original names. Recovering
+        # access path is not guaranteed in these cases.
         if not name or not name[0].isalpha():
             name = "sub" + name
         base = name
@@ -797,3 +795,15 @@ class OutputGraph(fx.Tracer, Checkpointable[OutputGraphState]):
     def remove_node(self, node):
         self.graph.erase_node(node)
         self.name_to_input.pop(node.name, None)
+
+    # "." is not allowed when registering modules/parameters/bufers
+    # for torch.nn.Module so we use ">" to avoid the ambiguity of "_"
+    # while preserve some readablity.
+    @staticmethod
+    def _access_path_to_module_key(names: List[str]) -> str:
+        name = ".".join(names)
+        return name.replace(".", ">")
+
+    @staticmethod
+    def _module_key_to_access_path(module_key: str) -> str:
+        return module_key.replace(">", ".")
