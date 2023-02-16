@@ -96,6 +96,13 @@ compile_threads = (
     )
 )
 
+# autotuning global cache path
+if is_fbcode():
+    from libfb.py import parutil
+    global_cache_path = parutil.get_file_path("fb/global_cache", pkg=__package__)
+else:
+    global_cache_path = None
+
 # If kernel is fused, the name is generated from the origin node op names
 # for larger kernels limit this
 kernel_name_max_ops = 10
