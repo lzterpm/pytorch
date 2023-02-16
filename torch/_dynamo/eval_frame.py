@@ -414,8 +414,8 @@ def optimize(
         return _NullDecorator()
     if sys.platform == "win32":
         raise RuntimeError("Windows not yet supported for torch.compile")
-    if sys.version_info >= (3, 11):
-        raise RuntimeError("Python 3.11+ not yet supported for torch.compile")
+    if sys.version_info >= (3, 12):
+        raise RuntimeError("Python 3.12+ not yet supported for torch.compile")
 
     backend = get_compiler_fn(backend)
 
